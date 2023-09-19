@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "name": "bluffchess",
+  "private": true,
+  "_moduleAliases": {
+    "~": "./src/frontend/",
+    "@purs": "./output/"
+  },
+  "scripts": {
+    "build-ps": "spago build",
+    "build": "spago build && webpack --progress --display-error-details",
+    "clean": "npm run clean-scripts && if exist webroot\\build rmdir /s /q webroot\\build",
+    "really-clean": "git clean -xfd src/frontend",
+    "watch": "npm run clean && node ./webpack.config.js"
+  },
+  "dependencies": {
+    "spago": "^0.21.0"
+  }
+}
