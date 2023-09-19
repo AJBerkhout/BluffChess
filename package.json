@@ -1,19 +1,14 @@
 {
-  "version": "1.0.0",
-  "name": "bluffchess",
   "private": true,
-  "_moduleAliases": {
-    "~": "./src/frontend/",
-    "@purs": "./output/"
+  "devDependencies": {
+    "parcel": "2.7.0",
+    "purescript": "^0.15.4",
+    "spago": "^0.20.9"
   },
   "scripts": {
-    "build-ps": "spago build",
-    "build": "spago build && webpack --progress --display-error-details",
-    "clean": "npm run clean-scripts && if exist webroot\\build rmdir /s /q webroot\\build",
-    "really-clean": "git clean -xfd src/frontend",
-    "watch": "npm run clean && node ./webpack.config.js"
-  },
-  "dependencies": {
-    "spago": "^0.21.0"
+    "build": "spago build",
+    "test": "spago test",
+    "serve": "parcel dev/index.html --open",
+    "build-prod": "rm -rf prod && mkdir -p prod && cp dev/index.html prod/ && spago bundle-app --to prod/index.js && parcel build prod/index.html"
   }
 }

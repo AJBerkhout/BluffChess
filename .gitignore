@@ -1,9 +1,14 @@
-# Dependencies
-.psci_modules
-.spago
+.*
+!.gitignore
+!.github
+
+output
+generated-docs
 bower_components
 node_modules
 
-# Generated files
-.psci
-output
+package-lock.json
+*.lock
+
+dist/
+prod/*
