@@ -9,7 +9,6 @@
   , "maybe"
   , "prelude"
   , "spec"
-  , "spec-discovery"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

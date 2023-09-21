@@ -1,14 +1,15 @@
-module Test.Game.Chess.Test.Move where
+module Test.Game.Chess.Move where
 
 import Prelude
 
-import Game.Chess.Move (movePiece)
+import Data.Array (sort)
+import Game.Chess.Move (handleMove)
 import Game.Chess.Pieces (Color(..), Piece(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 
-spec :: Spec Unit
-spec = do
+moveSpec :: Spec Unit
+moveSpec = do
   describe "move pieces" do
     it "moves piece to empty square" do 
       let 
@@ -26,9 +27,9 @@ spec = do
         expectedBoard = [
             {rank : 1, file : 2, piece : Pawn White},
             {rank : 2, file : 1, piece : Pawn Black}
-          ]
+          ] # sort
 
-      movePiece testMove simpleTestBoard  `shouldEqual` expectedBoard
+      (handleMove testMove simpleTestBoard # sort)  `shouldEqual` expectedBoard
 
     it "moves piece to square occupied by opponent" do
       let 
@@ -47,4 +48,4 @@ spec = do
             {rank : 2, file : 1, piece : Pawn White}
           ]
 
-      movePiece testMove simpleTestBoard  `shouldEqual` expectedBoard
+      (handleMove testMove simpleTestBoard # sort)  `shouldEqual` expectedBoard

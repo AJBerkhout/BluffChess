@@ -8,12 +8,15 @@ import Data.Array (filter)
 
 type Move = { from :: Coordinate, to :: Coordinate}
 
-removePiece :: Move -> Board -> Board
-removePiece move board = board # filter ((/=) move.from)
+removePiece :: {rank :: Int, file :: Int} -> Board -> Board
+removePiece move board = board # filter (\piece -> piece.rank /= move.rank || piece.file /= move.file)
 
 movePiece :: Move -> Board -> Board
 movePiece move board = board <> [move.to]
 
 handleMove :: Move -> Board -> Board
 handleMove move board = 
-  board # removePiece move # movePiece move
+  board 
+  # removePiece {rank: move.from.rank, file: move.from.file}
+  # removePiece {rank: move.to.rank, file: move.to.file}
+  # movePiece move

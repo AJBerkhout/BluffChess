@@ -4,13 +4,15 @@ import Prelude
 
 import Effect (Effect)
 import Effect.Aff (launchAff_)
-import Test.Spec.Discovery (discover)
+import Test.Game.Chess.Move (moveSpec)
+import Test.Spec (Spec)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (runSpec)
 
 
+baseSpecs ∷ Spec Unit
+baseSpecs = do
+  moveSpec
+
 main :: Effect Unit
-main = launchAff_
-  do
-    unitTests <- discover ".*\\.Spec"
-    runSpec [consoleReporter] unitTests
+main = launchAff_ $ runSpec [consoleReporter] do baseSpecs
