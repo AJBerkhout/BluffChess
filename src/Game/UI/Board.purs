@@ -3,7 +3,7 @@ module Game.UI.Board where
 import Prelude
 
 
-import Chess.Board (Board, initialBoard, printBoard)
+import Game.Chess.Board (Board, initialBoard, printBoard)
 import Effect.Class (class MonadEffect)
 import Game.Chess.Move (Move, handleMove)
 import Halogen as H

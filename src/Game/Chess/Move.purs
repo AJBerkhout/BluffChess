@@ -2,7 +2,7 @@ module Game.Chess.Move where
 
 import Prelude 
 
-import Chess.Board (Coordinate, Board)
+import Game.Chess.Board (Coordinate, Board)
 import Data.Array (filter)
 
 

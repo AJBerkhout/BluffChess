@@ -1,8 +1,8 @@
-module Chess.Board where
+module Game.Chess.Board where
 
 import Prelude
 
-import Chess.Pieces (Color(..), Piece(..))
+import Game.Chess.Pieces (Color(..), Piece(..))
 import Data.Array (find, foldl, (..))
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
@@ -54,7 +54,6 @@ initialBoard = [
 
 printBoard :: Board -> Effect Unit
 printBoard board = do
-
   
   let 
     rankNames = ["A", "B", "C", "D", "E", "F", "G", "H"]

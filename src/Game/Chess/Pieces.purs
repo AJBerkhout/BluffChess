@@ -1,4 +1,4 @@
-module Chess.Pieces where
+module Game.Chess.Pieces where
 
 import Prelude
 
