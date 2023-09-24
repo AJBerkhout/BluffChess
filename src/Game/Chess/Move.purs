@@ -5,7 +5,6 @@ import Prelude
 import Data.Array (filter, length)
 import Game.Chess.Board (Coordinate, Board)
 import Game.Chess.Pieces (Color(..), Piece(..), getData)
-import Data.Tuple.Nested ((/\))
 
 
 type Move = { from :: Coordinate, to :: Coordinate}
@@ -50,6 +49,26 @@ filterWithinBoardRange moves =
     to.rank > 0 && to.rank < 9 && to.file > 0 && to.file < 9
   )
 
+extrapolateDiagonal :: ({rank :: Int, file :: Int} -> {rank :: Int, file :: Int}) -> Board -> Coordinate -> {rank :: Int, file :: Int} -> Array Move
+extrapolateDiagonal direction board initialCoord ({rank, file})  =
+  let
+    nextCoord = direction {rank, file}
+  in
+    if nextCoord.rank > 0 && nextCoord.rank < 9 && nextCoord.file > 0 && nextCoord.file < 9 then
+      let 
+        candidateMove = [{ from : initialCoord, to: {rank: nextCoord.rank, file: nextCoord.file, piece:initialCoord.piece}}]
+        sameColorMove = candidateMove # filterSameColor board
+        anyColorMove = candidateMove # filterOccupied board
+      in
+        if (sameColorMove # length) == 0 then
+          []
+        else if (anyColorMove # length) == 0 then
+          candidateMove
+        else 
+          candidateMove <> extrapolateDiagonal direction board initialCoord nextCoord
+    else
+      []
+
 findLegalMoves :: Board -> Coordinate -> Array Move --TODO moves that put king in check
 findLegalMoves board (coord@{rank, file, piece : Pawn pieceData}) = -- TODO en passant, Promotions
   let 
@@ -57,12 +76,17 @@ findLegalMoves board (coord@{rank, file, piece : Pawn pieceData}) = -- TODO en p
       case pieceData.color of
         White -> 
           if rank == 2 && not pieceData.hasMoved then
-            [{ from : coord, to: {rank:  rank + 2, file: file, piece: coord.piece}}] # filterOccupied board
+            [ { from : coord, to: {rank: rank + 1, file: file, piece: coord.piece}}
+            , { from : coord, to: {rank:  rank + 2, file: file, piece: coord.piece}}
+            ] # filterOccupied board
           else
             [{ from : coord, to: {rank: rank + 1, file: file, piece: coord.piece}}] # filterOccupied board
         Black -> 
           if rank == 7 && not pieceData.hasMoved then
-            [{ from : coord, to: {rank: rank - 2, file: file, piece: coord.piece}}] # filterOccupied board
+            [
+              { from : coord, to: {rank: rank - 1, file: file, piece: coord.piece}}
+              ,{ from : coord, to: {rank: rank - 2, file: file, piece: coord.piece}}
+            ] # filterOccupied board
           else
             [{ from : coord, to: {rank: rank - 1, file: file, piece: coord.piece}}] # filterOccupied board
     piecesInCaptureRange = 
@@ -85,7 +109,7 @@ findLegalMoves board (coord@{rank, file, piece : Pawn pieceData}) = -- TODO en p
     in 
       candidateMoves <> captureMoves
 
-findLegalMoves board (coord@{rank, file, piece : Knight pieceData}) =
+findLegalMoves board (coord@{rank, file, piece : Knight _}) =
   let 
     candidateMoves = 
       [{ from : coord, to: {rank: rank + 2, file: file + 1, piece: coord.piece}}
@@ -103,40 +127,38 @@ findLegalMoves board (coord@{rank, file, piece : Knight pieceData}) =
     # filterWithinBoardRange
 
 findLegalMoves board (coord@{piece : Bishop _}) =
-  let
-    extrapolateDiagonal :: ({rank :: Int, file :: Int} -> {rank :: Int, file :: Int}) -> {rank :: Int, file :: Int} -> Array Move
-    extrapolateDiagonal direction ({rank, file}) =
-      let
-        nextCoord = direction {rank, file}
-      in
-        if nextCoord.rank > 0 && nextCoord.rank < 9 && nextCoord.file > 0 && nextCoord.file < 9 then
-          let 
-            candidateMove = [{ from : coord, to: {rank: nextCoord.rank, file: nextCoord.file, piece: coord.piece}}]
-            sameColorMove = candidateMove # filterSameColor board
-            anyColorMove = candidateMove # filterOccupied board
-          in
-            if (sameColorMove # length) /= 0 then
-              []
-            else if (anyColorMove # length) /= 0 then
-              anyColorMove
-            else 
-              candidateMove <> extrapolateDiagonal direction nextCoord
-        else
-          []
-  in
-    extrapolateDiagonal (\{rank, file} -> {rank : rank + 1, file : file + 1}) {rank:coord.rank, file:coord.file}
-    <> extrapolateDiagonal (\{rank, file} -> {rank : rank + 1, file : file - 1}) {rank:coord.rank, file:coord.file}
-    <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file + 1}) {rank:coord.rank, file:coord.file}
-    <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file - 1}) {rank:coord.rank, file:coord.file}
+    extrapolateDiagonal (\{rank, file} -> {rank : rank + 1, file : file + 1})    board coord {rank:coord.rank, file:coord.file}
+    <> extrapolateDiagonal (\{rank, file} -> {rank : rank + 1, file : file - 1}) board coord {rank:coord.rank, file:coord.file}
+    <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file + 1}) board coord {rank:coord.rank, file:coord.file}
+    <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file - 1}) board coord {rank:coord.rank, file:coord.file}
     
 
 
-findLegalMoves board (coord@{rank, file, piece : Rook pieceData}) =
-  [{ from : coord, to: coord}]
+findLegalMoves board (coord@{piece : Rook _}) =
+  extrapolateDiagonal (\{rank, file} -> {rank : rank + 1, file : file})    board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file}) board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank, file : file + 1}) board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank, file : file - 1}) board coord {rank:coord.rank, file:coord.file}
 
-findLegalMoves board (coord@{rank, file, piece : Queen pieceData}) =
-  [{ from : coord, to: coord}]
+findLegalMoves board (coord@{piece : Queen _}) =
+  extrapolateDiagonal (\{rank, file} -> {rank : rank + 1, file : file})    board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file}) board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank, file : file + 1}) board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank, file : file - 1}) board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank + 1, file : file + 1}) board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank + 1, file : file - 1}) board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file + 1}) board coord {rank:coord.rank, file:coord.file}
+  <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file - 1}) board coord {rank:coord.rank, file:coord.file}
 
 
-findLegalMoves board (coord@{rank, file, piece : King pieceData}) =
-  [{ from : coord, to: coord}]
+findLegalMoves board (coord@{rank, file, piece : King _}) = -- TODO castling
+  [{ from : coord, to: {rank: rank + 1, file: file, piece: coord.piece}}
+  , { from : coord, to: {rank: rank - 1, file: file, piece: coord.piece}}
+  , { from : coord, to: {rank: rank, file: file + 1, piece: coord.piece}}
+  , { from : coord, to: {rank: rank, file: file - 1, piece: coord.piece}}
+  , { from : coord, to: {rank: rank + 1, file: file + 1, piece: coord.piece}}
+  , { from : coord, to: {rank: rank + 1, file: file - 1, piece: coord.piece}}
+  , { from : coord, to: {rank: rank - 1, file: file + 1, piece: coord.piece}}
+  , { from : coord, to: {rank: rank - 1, file: file - 1, piece: coord.piece}}
+  ]
+  # filterSameColor board
