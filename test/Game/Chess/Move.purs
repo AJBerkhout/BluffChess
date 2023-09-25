@@ -349,3 +349,254 @@ moveSpec = do
       log $ show (difference expectedMoves (findLegalMoves simpleTestBoard coordinateToMove))
       ((findLegalMoves simpleTestBoard coordinateToMove) # length) `shouldEqual` (expectedMoves # length)
       ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+
+  describe "finds legal rook moves" do
+    it "moves rook on empty board" do
+      let 
+        simpleTestBoard = [
+            {rank : 4, file : 4, piece : Rook { color : White, hasMoved: true}}
+          ]
+        coordinateToMove = {rank : 4, file : 4, piece : Rook { color : White, hasMoved: true}}
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 3, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 2, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 1, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 3, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 2, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 1, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 5, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 6, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 7, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 8, piece : Rook { color : White, hasMoved: true}}}
+          ]
+      
+      ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+
+    it "stops before first same colored piece" do
+      let
+        simpleTestBoard = [
+          {rank : 4, file : 4, piece : Rook { color : White, hasMoved: true}},
+          {rank : 2, file : 4, piece : Pawn { color : White, hasMoved: true}}
+        ]
+        coordinateToMove = {rank : 4, file : 4, piece : Rook { color : White, hasMoved: true}}
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 3, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 3, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 2, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 1, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 5, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 6, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 7, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 8, piece : Rook { color : White, hasMoved: true}}}
+          ]
+
+      ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+
+    it "stops on first opposite colored piece" do
+      let
+        simpleTestBoard = [
+          {rank : 4, file : 4, piece : Rook { color : White, hasMoved: true}},
+          {rank : 2, file : 4, piece : Pawn { color : Black, hasMoved: true}}
+        ]
+        coordinateToMove = {rank : 4, file : 4, piece : Rook { color : White, hasMoved: true}}
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 2, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 4, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 3, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 2, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 1, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 5, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 6, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 7, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 8, piece : Rook { color : White, hasMoved: true}}}
+          ]
+
+      ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+
+  describe "finds legal queen moves" do
+    it "moves queen on empty board" do
+      let 
+        simpleTestBoard = [
+            {rank : 4, file : 4, piece : Queen { color : White, hasMoved: true}}
+          ]
+        coordinateToMove = {rank : 4, file : 4, piece : Queen { color : White, hasMoved: true}}
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 3, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 2, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 1, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 3, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 2, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 1, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 5, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 6, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 7, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 8, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 3, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 2, file : 2, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 1, file : 1, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 5, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 2, file : 6, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 1, file : 7, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 3, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 2, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 1, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 5, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 6, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 7, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 8, piece : Queen { color : White, hasMoved: true}}}
+          ]
+
+      ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+
+    it "stops before first same colored piece" do
+      let 
+        simpleTestBoard = [
+            {rank : 4, file : 4, piece : Queen { color : White, hasMoved: true}},
+            {rank : 2, file: 4, piece : Pawn { color : White, hasMoved: true}},
+            {rank : 3, file: 3, piece : Pawn { color : White, hasMoved: true}}
+          ]
+
+        coordinateToMove = {rank : 4, file : 4, piece : Queen { color : White, hasMoved: true}}
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 3, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 3, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 2, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 1, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 5, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 6, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 7, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 8, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 5, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 2, file : 6, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 1, file : 7, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 3, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 2, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 1, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 5, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 6, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 7, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 8, piece : Queen { color : White, hasMoved: true}}}
+          ]
+
+      ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+
+    it "stops on first opposite colored piece" do
+      let 
+        simpleTestBoard = [
+            {rank : 4, file : 4, piece : Queen { color : White, hasMoved: true}},
+            {rank : 2, file: 4, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 3, file: 3, piece : Pawn { color : Black, hasMoved: true}}
+          ]
+
+        coordinateToMove = {rank : 4, file : 4, piece : Queen { color : White, hasMoved: true}}
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 2, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 4, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 3, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 2, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 1, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 5, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 6, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 7, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 8, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 3, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 5, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 2, file : 6, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 1, file : 7, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 3, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 2, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 1, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 5, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 6, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 7, piece : Queen { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 8, piece : Queen { color : White, hasMoved: true}}}
+          ]
+
+      ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+
+
+  describe "finds legal king moves" do
+    it "moves king on empty board" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}}
+          ]
+        coordinateToMove = {rank : 4, file : 4, piece : King { color : White, hasMoved: true}}
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 3, file : 4, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 4, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 3, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 3, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 3, piece : King { color : White, hasMoved: true}}}
+          ]
+
+      ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+
+    it "is blocked by same colored piece" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 3, file : 4, piece : Pawn { color : White, hasMoved: true}}
+          ]
+        coordinateToMove = {rank : 4, file : 4, piece : King { color : White, hasMoved: true}}
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 3, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 4, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 3, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 3, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 3, piece : King { color : White, hasMoved: true}}}
+          ]
+
+      ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+
+    it "can capture opposite colored piece" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 3, file : 4, piece : Pawn { color : Black, hasMoved: true}}
+          ]
+        coordinateToMove = {rank : 4, file : 4, piece : King { color : White, hasMoved: true}}
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 3, file : 4, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 4, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 3, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 3, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 3, piece : King { color : White, hasMoved: true}}}
+          ]
+
+      ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
