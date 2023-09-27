@@ -2,38 +2,54 @@ module Game.UI.Board where
 
 import Prelude
 
-import Effect.Class (class MonadEffect)
-import Game.Chess.Board (Board, initialBoard, printBoard)
-import Game.Chess.Move (Move, handleMove)
+import CSS (display, flex)
+import Data.Array (find, (..))
+import Game.Chess.Board (Board, initialBoard)
+import Game.Chess.Move (Move)
+import Game.UI.Square (_square, square)
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
-import Web.HTML.Event.DataTransfer (files)
+import Halogen.HTML.CSS as CSS
+
+
 
 type State = Board
 
 data Action = MovePiece Move | PrintBoard Board
 
-component :: forall query input output m. MonadEffect m => H.Component query input output m
+component :: forall query input output m. H.Component query input output m
 component =
   H.mkComponent
     { initialState: \_ -> initialBoard
     , render
-    , eval: H.mkEval H.defaultEval { handleAction = handleAction }
+    , eval: H.mkEval H.defaultEval
     }
 
-render :: forall m. State -> H.ComponentHTML Action () m
+type Slots = ( button :: forall query. H.Slot query Void Int )
+
+render :: forall action m. State -> H.ComponentHTML action Slots m
 render state = do
-  let 
-    ranks = [1..8]
-    files = ['a'..'h']
+  HH.div
+    [ CSS.style do 
+          display flex
+      ]
+    board
 
-  HH.div_
-    
-
-handleAction :: forall output m. MonadEffect m => Action -> H.HalogenM State Action () output m Unit
-handleAction = case _ of
-  MovePiece move -> H.modify_ (handleMove move)
-  PrintBoard state -> do
-    H.liftEffect $ printBoard state
-    H.modify_ (const state)
+  where
+    ranks = 1..8
+    files = 1..8
+    board =
+      files <#>
+      (\f -> 
+        HH.div_ 
+          (
+            ranks
+            <#> 
+              (\r ->
+                let
+                  matchingPiece = state # find (\{file, rank} -> file == f && rank == r) # map (\{piece} -> piece)
+                in
+                HH.div_ [ HH.slot_ _square 0 square { piece : matchingPiece, rank : r, file : f }]
+              )
+            )
+      )

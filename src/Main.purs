@@ -2,7 +2,7 @@ module Main where
 
 import Prelude
 
-import Game.UI.Main as Main
+import Game.UI.Board as Main
 import Effect (Effect)
 import Halogen.Aff as HA
 import Halogen.VDom.Driver (runUI)
