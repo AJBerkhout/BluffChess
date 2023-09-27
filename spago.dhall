@@ -3,6 +3,7 @@
   [ "aff"
   , "arrays"
   , "console"
+  , "css"
   , "effect"
   , "foldable-traversable"
   , "halogen"
