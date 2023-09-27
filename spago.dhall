@@ -6,6 +6,7 @@
   , "effect"
   , "foldable-traversable"
   , "halogen"
+  , "halogen-css"
   , "maybe"
   , "prelude"
   , "spec"

@@ -1,14 +1,13 @@
-module Game.UI.Board where
+module Game.UI.Main where
 
 import Prelude
 
-import Effect.Class (class MonadEffect)
 import Game.Chess.Board (Board, initialBoard, printBoard)
+import Effect.Class (class MonadEffect)
 import Game.Chess.Move (Move, handleMove)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
-import Web.HTML.Event.DataTransfer (files)
 
 type State = Board
 
@@ -24,12 +23,11 @@ component =
 
 render :: forall m. State -> H.ComponentHTML Action () m
 render state = do
-  let 
-    ranks = [1..8]
-    files = ['a'..'h']
-
   HH.div_
-    
+    [ HH.button 
+        [ HE.onClick $ \_ -> PrintBoard state]
+        [ HH.text "Print Board" ]
+    ]
 
 handleAction :: forall output m. MonadEffect m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
