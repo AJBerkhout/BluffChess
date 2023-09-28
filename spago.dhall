@@ -1,8 +1,11 @@
 { name = "halogen-project"
 , dependencies =
   [ "aff"
+  , "argonaut-codecs"
+  , "argonaut-generic"
   , "arrays"
   , "console"
+  , "const"
   , "css"
   , "effect"
   , "foldable-traversable"
