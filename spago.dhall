@@ -5,6 +5,7 @@
   , "argonaut-generic"
   , "arrays"
   , "console"
+  , "const"
   , "css"
   , "effect"
   , "foldable-traversable"
