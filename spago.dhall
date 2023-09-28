@@ -1,6 +1,8 @@
 { name = "halogen-project"
 , dependencies =
   [ "aff"
+  , "argonaut-codecs"
+  , "argonaut-generic"
   , "arrays"
   , "console"
   , "css"
