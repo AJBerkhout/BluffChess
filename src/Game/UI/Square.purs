@@ -28,11 +28,12 @@ derive instance Ord SquareSlot
 data Output = 
     InitialClick Coordinate
   | MoveClick Move
+  | CancelClick
 
 
 data Clickable = Move Coordinate | Piece | NotClickable
 
-data Action = IClick Coordinate | MClick Move | ReceiveParentInput Input
+data Action = IClick Coordinate | MClick Move | Cancel | ReceiveParentInput Input
 
 type Input = { piece :: Maybe Piece, rank :: Int, file :: Int, clickable :: Clickable }
 
@@ -77,6 +78,7 @@ square =
                 backgroundColor (findColor rank file)
                 width $ px 50.0
                 height $ px 50.0
+            , HE.onClick \_ -> Cancel
             ]
           Piece->
             case piece of
@@ -92,6 +94,7 @@ square =
                     backgroundColor (findColor rank file)
                     width $ px 50.0
                     height $ px 50.0
+                , HE.onClick \_ -> Cancel
                 ]
           Move fromCoord ->
             [ CSS.style do 
@@ -116,3 +119,4 @@ square =
     IClick coord -> H.raise $ InitialClick coord
     MClick move -> H.raise $ MoveClick move
     ReceiveParentInput input -> H.modify_ \_ -> input
+    Cancel -> H.raise CancelClick
