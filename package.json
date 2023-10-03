@@ -7,8 +7,8 @@
   "scripts": {
     "test": "spago test",
     "build": "spago build",
-	"bundle": "npm run build && esbuild dev/index.js --bundle --loader:.png=file --outdir=out",
-	"serve": "npm run bundle && npx http-server"
+	"bundle": "npm run build && esbuild static/index.js --bundle --loader:.png=file --outdir=out",
+	"serve": "npm run bundle && npx http-server -o ./static/index"
   },
   "dependencies": {
     "esbuild": "^0.19.4",

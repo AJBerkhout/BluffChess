@@ -10,6 +10,7 @@ import Data.Maybe (Maybe(..))
 import Game.Chess.Board (Coordinate)
 import Game.Chess.Move (Move)
 import Game.Chess.Pieces (Piece)
+import Game.UI.Pieces (pieceToImage)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.CSS as CSS
@@ -107,11 +108,9 @@ square =
     in
     HH.div 
       divFeatures
-      [ HH.text (
-          case piece of
-            Just p -> show p
-            Nothing -> ""
-        ) 
+      [ case piece of
+          Just p -> pieceToImage p
+          Nothing -> HH.text ""
       ]
 
   handleAction :: Action -> H.HalogenM State Action () Output m Unit

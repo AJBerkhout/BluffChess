@@ -1,4 +1,5 @@
 .*
+
 !.gitignore
 !.github
 
@@ -11,4 +12,5 @@ package-lock.json
 *.lock
 
 dist/
+out/*
 prod/*
