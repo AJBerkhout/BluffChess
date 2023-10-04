@@ -12,7 +12,7 @@ import Halogen.HTML.Properties as HP
 
 pieceToImage :: forall w i. Piece -> HTML w i
 pieceToImage piece = 
-  HH.img [ HP.src $ "/images/" <> imageName  <> ".png"]
+  HH.img [ HP.src $ "/static/images/" <> imageName  <> ".png"]
   where 
     imageName = 
       show piece <> "_" <> show (getData piece).color

@@ -2,7 +2,7 @@ module Game.UI.Square where
 
 import Prelude
 
-import CSS (Color, backgroundColor, black, border, height, px, rgb, solid, white, width)
+import CSS (Color, backgroundColor, border, borderBox, boxSizing, display, flex, height, px, rgb, solid, white, width)
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
@@ -51,7 +51,7 @@ _square = Proxy
 findColor :: Int -> Int -> Color
 findColor rank file = 
   if (rank + file) `mod` 2 == 0 then
-    black
+    rgb 36 115 61
   else
     white
 
@@ -72,13 +72,16 @@ square =
   render :: State -> H.ComponentHTML Action () m
   render { piece, rank, file, clickable } = 
     let 
+      dim = px 64.0
       divFeatures =
         case clickable of 
           NotClickable -> 
             [ CSS.style do 
                 backgroundColor (findColor rank file)
-                width $ px 50.0
-                height $ px 50.0
+                width $ dim
+                height $ dim
+                display flex
+                
             , HE.onClick \_ -> Cancel
             ]
           Piece->
@@ -86,23 +89,27 @@ square =
               Just p ->
                 [ CSS.style do 
                   backgroundColor (findColor rank file)
-                  width $ px 50.0
-                  height $ px 50.0
+                  width $ dim
+                  height $ dim
+                  display flex
                 , (HE.onClick \_ -> IClick {piece : p, rank : rank, file : file})
                 ]
               Nothing -> 
                 [ CSS.style do 
                     backgroundColor (findColor rank file)
-                    width $ px 50.0
-                    height $ px 50.0
+                    width $ dim
+                    height $ dim
+                    display flex
                 , HE.onClick \_ -> Cancel
                 ]
           Move fromCoord ->
             [ CSS.style do 
               backgroundColor (findColor rank file)
-              width $ px 50.0
-              height $ px 50.0
+              width $ dim
+              height $ dim
               border solid (px 2.0) (rgb 255 0 0)
+              boxSizing borderBox
+              display flex
             , (HE.onClick \_ -> MClick {from : fromCoord, to: {piece : fromCoord.piece, rank : rank, file : file}})
             ]
     in

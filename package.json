@@ -2,17 +2,20 @@
   "private": true,
   "devDependencies": {
     "purescript": "^0.15.4",
-    "spago": "^0.20.9"
+    "spago": "^0.20.9",
+	  "esbuild": "^0.19.4",
+    "http-server": "^14.1.1",
+    "purescript-psa": "^0.8.2",
+    "purs-backend-es": "^1.4.2"
   },
   "scripts": {
-    "test": "spago test",
+    "postinstall": "spago install",
+    "clean": "rm -rf node_modules output .spago dist/*.js *.lock .cache",
     "build": "spago build",
-	"bundle": "npm run build && esbuild static/index.js --bundle --loader:.png=file --outdir=out",
-	"serve": "npm run bundle && npx http-server -o ./static/index"
+    "test": "spago test",
+    "serve": "spago build && esbuild --loader:.png=file --bundle index.js --servedir=dist --outdir=/dist",
+    "bundle": "spago -x spago.production.dhall build && purs-backend-es bundle-app --main Main --minify --no-build --to dist/index.js"
   },
   "dependencies": {
-    "esbuild": "^0.19.4",
-    "http-server": "^14.1.1",
-    "purescript-psa": "^0.8.2"
   }
 }

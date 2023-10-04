@@ -1,16 +1,26 @@
-.*
-
-!.gitignore
-!.github
-
-output
-generated-docs
+.psci_modules
 bower_components
 node_modules
 
-package-lock.json
-*.lock
+# Dot files
+.spago
+.psci
+.pulp-cache
+.purs-repl
+.psc-ide-port
+.psa-stash
+.cache
 
-dist/
-out/*
-prod/*
+# IDE files
+*.code-workspace
+.vscode
+
+# Generated
+output
+dce-output
+output-es
+*.lock
+*.map
+
+# Dist
+dist/*.js
