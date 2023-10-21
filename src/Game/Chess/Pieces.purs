@@ -4,18 +4,21 @@ import Prelude
 
 data Color = White | Black
 derive instance Eq Color
+instance Show Color where
+  show White = "white"
+  show Black = "black"
 
 type PieceData = { color :: Color, hasMoved :: Boolean}
 
 data Piece = Pawn PieceData | Knight PieceData | Bishop PieceData| Rook PieceData | Queen PieceData | King PieceData
 derive instance Eq Piece
 instance Show Piece where
-  show (Pawn _) = "P"
-  show (Knight _) = "N"
-  show (Bishop _) = "B"
-  show (Rook _) = "R"
-  show (Queen _) = "Q"
-  show (King _) = "K"
+  show (Pawn _) = "pawn"
+  show (Knight _) = "knight"
+  show (Bishop _) = "bishop"
+  show (Rook _) = "rook"
+  show (Queen _) = "queen"
+  show (King _) = "king"
   
 instance Ord Piece where
   compare (Pawn _) (Pawn _) = EQ
