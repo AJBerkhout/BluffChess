@@ -13,6 +13,8 @@ import Effect.Console (log)
 type Coordinate = { rank :: Int, file :: Int, piece :: Piece }
 type Board = Array Coordinate 
 
+data GameResult = Checkmate | Stalemate | InProgress
+
 concatString :: Array String -> String
 concatString = foldl (\acc x -> acc <> " " <> x) ""
 
