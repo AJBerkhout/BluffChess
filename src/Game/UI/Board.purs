@@ -64,7 +64,7 @@ render state = do
                     case state.clickedStatus of
                       Clicked moves -> 
                         case moves # find (\{to} -> to.rank == r && to.file == f ) of
-                          Just move -> Move move.from
+                          Just move -> Move move
                           Nothing -> 
                             case matchingPiece of
                               Just p | (getData p).color == state.turn -> Piece

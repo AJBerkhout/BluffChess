@@ -2,8 +2,7 @@ module Test.Game.Chess.Move where
 
 import Prelude
 
-import Data.Array (difference, length, sort)
-import Effect.Class.Console (log)
+import Data.Array (length, sort)
 import Game.Chess.Board (GameResult(..))
 import Game.Chess.Move (checkGameResult, extrapolateDiagonal, filterMovesThatPutKingInCheck, filterOccupied, findLegalMoves, handleMove, isInCheck)
 import Game.Chess.Pieces (Color(..), Piece(..))
@@ -347,7 +346,6 @@ moveSpec = do
             {from : coordinateToMove, to:{rank : 7, file : 7, piece : Bishop { color : White, hasMoved: true}}},
             {from : coordinateToMove, to:{rank : 8, file : 8, piece : Bishop { color : White, hasMoved: true}}}
           ]
-      log $ show (difference expectedMoves (findLegalMoves simpleTestBoard coordinateToMove))
       ((findLegalMoves simpleTestBoard coordinateToMove) # length) `shouldEqual` (expectedMoves # length)
       ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
 

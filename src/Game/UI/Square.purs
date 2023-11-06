@@ -2,7 +2,8 @@ module Game.UI.Square where
 
 import Prelude
 
-import CSS (Color, backgroundColor, border, borderBox, boxSizing, display, flex, height, px, rgb, solid, white, width)
+import CSS (Color, backgroundColor, border, borderBox, boxSizing, cursor, display, flex, height, px, rgb, solid, white, width)
+import CSS.Cursor (pointer)
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
@@ -32,7 +33,7 @@ data Output =
   | CancelClick
 
 
-data Clickable = Move Coordinate | Piece | NotClickable
+data Clickable = Move Move | Piece | NotClickable
 
 data Action = IClick Coordinate | MClick Move | Cancel | ReceiveParentInput Input
 
@@ -92,6 +93,7 @@ square =
                   width $ dim
                   height $ dim
                   display flex
+                  cursor pointer
                 , (HE.onClick \_ -> IClick {piece : p, rank : rank, file : file})
                 ]
               Nothing -> 
@@ -102,7 +104,7 @@ square =
                     display flex
                 , HE.onClick \_ -> Cancel
                 ]
-          Move fromCoord ->
+          Move move ->
             [ CSS.style do 
               backgroundColor (findColor rank file)
               width $ dim
@@ -110,7 +112,8 @@ square =
               border solid (px 2.0) (rgb 255 0 0)
               boxSizing borderBox
               display flex
-            , (HE.onClick \_ -> MClick {from : fromCoord, to: {piece : fromCoord.piece, rank : rank, file : file}})
+              cursor pointer
+            , (HE.onClick \_ -> MClick move)
             ]
     in
     HH.div 

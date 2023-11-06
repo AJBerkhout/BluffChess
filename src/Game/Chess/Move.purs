@@ -105,9 +105,30 @@ filterMovesThatPutKingInCheck board moves =
       not (isInCheck boardAfterMove (getData to.piece).color)
   )
 
+convertToPromotions :: Array Move -> Array Move
+convertToPromotions moves = 
+  moves 
+  # map (\{from, to} -> 
+    case to.piece of 
+      Pawn p -> 
+        case p.color of 
+          White | to.rank == 8 -> 
+            {from
+            , to: { rank: to.rank, file: to.file, piece : Queen {color : White, hasMoved : true } }
+            }
+          Black | to.rank == 1-> 
+            {from
+            , to: { rank: to.rank, file: to.file, piece : Queen {color : Black, hasMoved : true } }
+            }
+          _ -> 
+            {from, to}
+      _ -> 
+        {from, to}
+  )
+
 
 findBaseLegalMoves :: Board -> Coordinate -> Array Move
-findBaseLegalMoves board (coord@{rank, file, piece : Pawn pieceData}) = -- TODO en passant, Promotions
+findBaseLegalMoves board (coord@{rank, file, piece : Pawn pieceData}) = -- TODO en passant
   let 
     candidateMoves =
       case pieceData.color of
@@ -144,7 +165,10 @@ findBaseLegalMoves board (coord@{rank, file, piece : Pawn pieceData}) = -- TODO 
       )
 
     in 
-      candidateMoves <> captureMoves
+      (candidateMoves <> captureMoves)
+      # filterWithinBoardRange
+      # filterSameColor board
+      # convertToPromotions
 
 findBaseLegalMoves board (coord@{rank, file, piece : Knight _}) =
   let 
