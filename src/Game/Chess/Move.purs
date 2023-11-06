@@ -2,10 +2,8 @@ module Game.Chess.Move where
 
 import Prelude
 
-import Data.Array (concat, filter, foldl, head, length)
+import Data.Array (filter, foldl, head, length, takeWhile)
 import Data.Maybe (fromMaybe)
-import Effect.Console (log)
-import Effect.Unsafe (unsafePerformEffect)
 import Game.Chess.Board (Board, Coordinate, GameResult(..))
 import Game.Chess.Pieces (Color(..), Piece(..), getData)
 
@@ -178,7 +176,6 @@ findBaseLegalMoves board (coord@{piece : Rook _}) =
   <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file}) board coord {rank:coord.rank, file:coord.file}
   <> extrapolateDiagonal (\{rank, file} -> {rank : rank, file : file + 1}) board coord {rank:coord.rank, file:coord.file}
   <> extrapolateDiagonal (\{rank, file} -> {rank : rank, file : file - 1}) board coord {rank:coord.rank, file:coord.file}
-
 findBaseLegalMoves board (coord@{piece : Queen _}) =
   extrapolateDiagonal (\{rank, file} -> {rank : rank + 1, file : file})    board coord {rank:coord.rank, file:coord.file}
   <> extrapolateDiagonal (\{rank, file} -> {rank : rank - 1, file : file}) board coord {rank:coord.rank, file:coord.file}
@@ -201,6 +198,7 @@ findBaseLegalMoves board (coord@{rank, file, piece : King _}) = -- TODO castling
   , { from : coord, to: {rank: rank - 1, file: file - 1, piece: coord.piece}}
   ]
   # filterSameColor board
+  # filterWithinBoardRange
 
 
 findLegalMoves :: Board -> Coordinate -> Array Move 
@@ -221,19 +219,11 @@ checkGameResult board color =
         {color : c} | c == color -> true
         _ -> false
       )
-    moves = pieces # map (\piece -> findLegalMoves board piece)
-    movesFlat = moves # concat
+    unmoveablePieces = pieces # takeWhile (\piece -> (findLegalMoves board piece # length) == 0)
   in
-    if (movesFlat # length) == 0 && isInCheck board color then
-      let _ = unsafePerformEffect $ log "Checkmate" in
+    if (unmoveablePieces # length) == (pieces # length) && isInCheck board color then
       Checkmate
-    else if (movesFlat # length) == 0 then
-      let _ =  unsafePerformEffect $ log "Statemate" in
+    else if (unmoveablePieces # length)  == (pieces # length)  then
       Stalemate
     else
-      let 
-        _ =  unsafePerformEffect $ log "StillGoing" 
-        _ = unsafePerformEffect $ log (moves # length # show)
-        _ = unsafePerformEffect $ log (isInCheck board color # show)
-      in
       InProgress

@@ -4,7 +4,8 @@ import Prelude
 
 import Data.Array (difference, length, sort)
 import Effect.Class.Console (log)
-import Game.Chess.Move (extrapolateDiagonal, filterOccupied, findLegalMoves, handleMove)
+import Game.Chess.Board (GameResult(..))
+import Game.Chess.Move (checkGameResult, extrapolateDiagonal, filterMovesThatPutKingInCheck, filterOccupied, findLegalMoves, handleMove, isInCheck)
 import Game.Chess.Pieces (Color(..), Piece(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -600,3 +601,205 @@ moveSpec = do
           ]
 
       ((findLegalMoves simpleTestBoard coordinateToMove) # sort) `shouldEqual` (expectedMoves # sort)
+  describe "figures out when king is in check" do
+    it "not in check" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 8, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 3, file : 4, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 4, file : 4, piece : King { color : Black, hasMoved: true}}
+          ]
+      (isInCheck simpleTestBoard White) `shouldEqual` false
+      (isInCheck simpleTestBoard Black) `shouldEqual` false
+
+    it "pawn check" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 5, file : 3, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 8, file : 4, piece : King { color : Black, hasMoved: true}}
+          ]
+      (isInCheck simpleTestBoard White) `shouldEqual` true
+      (isInCheck simpleTestBoard Black) `shouldEqual` false
+
+    it "knight check" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 6, file : 3, piece : Knight { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 8, file : 4, piece : King { color : Black, hasMoved: true}}
+          ]
+      (isInCheck simpleTestBoard White) `shouldEqual` true
+      (isInCheck simpleTestBoard Black) `shouldEqual` false
+
+    it "bishop check" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 6, file : 6, piece : Bishop { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 8, file : 4, piece : King { color : Black, hasMoved: true}}
+          ]
+      (isInCheck simpleTestBoard White) `shouldEqual` true
+      (isInCheck simpleTestBoard Black) `shouldEqual` false
+
+    it "blocked bishop check" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 6, file : 6, piece : Bishop { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 8, file : 4, piece : King { color : Black, hasMoved: true}},
+            {rank : 5, file : 5, piece : Pawn { color : White, hasMoved: true}}
+          ]
+      (isInCheck simpleTestBoard White) `shouldEqual` false
+      (isInCheck simpleTestBoard Black) `shouldEqual` false
+
+    it "rook check" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 4, file : 8, piece : Rook { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 8, file : 4, piece : King { color : Black, hasMoved: true}}
+          ]
+      (isInCheck simpleTestBoard White) `shouldEqual` true
+      (isInCheck simpleTestBoard Black) `shouldEqual` false
+
+    it "blocked rook check" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 4, file : 8, piece : Rook { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 8, file : 4, piece : King { color : Black, hasMoved: true}},
+            {rank : 4, file : 5, piece : Pawn { color : White, hasMoved: true}}
+          ]
+      (isInCheck simpleTestBoard White) `shouldEqual` false
+      (isInCheck simpleTestBoard Black) `shouldEqual` false
+
+    it "queen check" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 4, file : 8, piece : Queen { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 8, file : 4, piece : King { color : Black, hasMoved: true}}
+          ]
+      (isInCheck simpleTestBoard White) `shouldEqual` true
+      (isInCheck simpleTestBoard Black) `shouldEqual` false
+
+    it "blocked queen check" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 4, file : 8, piece : Queen { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 8, file : 4, piece : King { color : Black, hasMoved: true}},
+            {rank : 4, file : 5, piece : Pawn { color : White, hasMoved: true}}
+          ]
+      (isInCheck simpleTestBoard White) `shouldEqual` false
+      (isInCheck simpleTestBoard Black) `shouldEqual` false
+
+    it "filters out illegal king moves" do 
+      let
+        simpleTestBoard = 
+          [
+            {rank : 3, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 4, file : 8, piece : Queen { color : Black, hasMoved: true}}
+          ]
+        coordinateToMove = {rank : 3, file : 4, piece : King { color : White, hasMoved: true}}
+        candidateMoves = [
+            {from : coordinateToMove, to:{rank : 4, file : 4, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 2, file : 4, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 3, piece : King { color : White, hasMoved: true}}}
+        ]
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 2, file : 4, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 5, piece : King { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 3, piece : King { color : White, hasMoved: true}}}
+        ]
+
+      filterMovesThatPutKingInCheck simpleTestBoard candidateMoves `shouldEqual` expectedMoves
+
+    it "filters out illegal pieces moves" do
+      let 
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 4, file : 5, piece : Rook { color : White, hasMoved: true}},
+            {rank : 4, file : 8, piece : Queen { color : Black, hasMoved: true}}
+          ]
+        coordinateToMove = {rank : 4, file : 5, piece : Rook { color : White, hasMoved: true}}
+        candidateMoves = [
+            {from : coordinateToMove, to:{rank : 4, file : 6, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 7, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 8, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 5, file : 5, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 6, file : 5, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 7, file : 5, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 8, file : 5, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 3, file : 5, piece : Rook { color : White, hasMoved: true}}}
+        ]
+        expectedMoves = [
+            {from : coordinateToMove, to:{rank : 4, file : 6, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 7, piece : Rook { color : White, hasMoved: true}}},
+            {from : coordinateToMove, to:{rank : 4, file : 8, piece : Rook { color : White, hasMoved: true}}}
+        ]
+
+      filterMovesThatPutKingInCheck simpleTestBoard candidateMoves `shouldEqual` expectedMoves
+  
+  describe "checks game end conditions" do
+
+    it "game still going" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 8, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 3, file : 4, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 3, file : 5, piece : Pawn { color : Black, hasMoved: true}},
+            {rank : 4, file : 4, piece : King { color : Black, hasMoved: true}}
+          ]
+      (checkGameResult simpleTestBoard White) `shouldEqual` InProgress
+      (checkGameResult simpleTestBoard Black) `shouldEqual` InProgress
+
+    it "stalemate" do 
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 8, file : 3, piece : Rook { color : Black, hasMoved : true}},
+            {rank : 8, file : 5, piece : Rook { color : Black, hasMoved : true}},
+            {rank : 3, file : 8, piece : Rook { color : Black, hasMoved : true}},
+            {rank : 5, file : 8, piece : Rook { color : Black, hasMoved : true}}
+          ]
+      (checkGameResult simpleTestBoard White) `shouldEqual` Stalemate
+
+    it "checkmate" do
+      let
+        simpleTestBoard = 
+          [
+            {rank : 4, file : 4, piece : King { color : White, hasMoved: true}},
+            {rank : 8, file : 3, piece : Rook { color : Black, hasMoved : true}},
+            {rank : 8, file : 5, piece : Rook { color : Black, hasMoved : true}},
+            {rank : 3, file : 8, piece : Rook { color : Black, hasMoved : true}},
+            {rank : 5, file : 8, piece : Rook { color : Black, hasMoved : true}},
+            {rank : 4, file : 8, piece : Rook { color : Black, hasMoved : true}}
+          ]
+      (checkGameResult simpleTestBoard White) `shouldEqual` Checkmate
+
+
+
