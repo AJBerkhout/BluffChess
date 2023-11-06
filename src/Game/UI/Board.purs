@@ -7,8 +7,8 @@ import Data.Array (find, reverse, (..))
 import Data.Const (Const)
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
-import Game.Chess.Board (Board, initialBoard)
-import Game.Chess.Move (Move, findLegalMoves, handleMove)
+import Game.Chess.Board (Board, GameResult(..), initialBoard)
+import Game.Chess.Move (Move, checkGameResult, findLegalMoves, handleMove)
 import Game.Chess.Pieces (Color(..), getData)
 import Game.UI.Square (Clickable(..), Output(..), _square, square)
 import Halogen as H
@@ -17,14 +17,14 @@ import Halogen.HTML.CSS as CSS
 import Halogen.HTML.Properties as HP
 
 data ClickedStatus = Clicked (Array Move) | NotClicked
-type State = { board :: Board, clickedStatus :: ClickedStatus, turn :: Color }
+type State = { board :: Board, clickedStatus :: ClickedStatus, turn :: Color, gameStatus :: GameResult }
 
 data Action = HandleClick Output
 
 component :: forall query input output. H.Component query input output Aff
 component =
   H.mkComponent
-    { initialState: \_ -> {board : initialBoard, clickedStatus : NotClicked, turn : White}
+    { initialState: \_ -> {board : initialBoard, clickedStatus : NotClicked, turn : White, gameStatus : InProgress}
     , render
     , eval: H.mkEval $ H.defaultEval { handleAction = handleAction }
     }
@@ -33,11 +33,17 @@ type Slots = ( square :: H.Slot (Const Void) Output Int )
 
 render :: forall m. State -> H.ComponentHTML Action Slots m
 render state = do
-  HH.div
-    [ CSS.style do 
-          display flex
-      ]
-    board
+  case state.gameStatus of
+    InProgress ->
+      HH.div
+        [ CSS.style do 
+              display flex
+          ]
+        board
+    Checkmate ->
+      HH.div_ [ HH.text "Checkmate."]
+    Stalemate ->
+      HH.div_ [ HH.text "Stalemate."]
 
   where
     ranks = 1..8
@@ -59,7 +65,10 @@ render state = do
                       Clicked moves -> 
                         case moves # find (\{to} -> to.rank == r && to.file == f ) of
                           Just move -> Move move.from
-                          Nothing -> NotClickable
+                          Nothing -> 
+                            case matchingPiece of
+                              Just p | (getData p).color == state.turn -> Piece
+                              _ -> NotClickable
                       NotClicked -> 
                         case matchingPiece of
                           Just p | (getData p).color == state.turn -> Piece
@@ -87,6 +96,7 @@ handleAction = case _ of
           turn = case state.turn of
             White -> Black
             Black -> White
-        H.modify_ (\_ -> {board : newBoard, clickedStatus : NotClicked, turn})
+          status = checkGameResult newBoard turn
+        H.modify_ (\_ -> {board : newBoard, clickedStatus : NotClicked, turn, gameStatus : status})
       CancelClick -> do
         H.modify_ (\st -> st {clickedStatus = NotClicked})
