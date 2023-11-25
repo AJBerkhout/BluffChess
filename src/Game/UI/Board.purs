@@ -8,7 +8,7 @@ import Data.Const (Const)
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Game.Chess.Board (Board, GameResult(..), initialBoard)
-import Game.Chess.Move (Move, checkGameResult, findLegalMoves, handleMove)
+import Game.Chess.Move (Move, checkGameResult, findLegalMoves, getTo, handleMove)
 import Game.Chess.Pieces (Color(..), getData)
 import Game.UI.Square (Clickable(..), Output(..), _square, square)
 import Halogen as H
@@ -63,8 +63,8 @@ render state = do
                   clickableStatus =
                     case state.clickedStatus of
                       Clicked moves -> 
-                        case moves # find (\{to} -> to.rank == r && to.file == f ) of
-                          Just move -> Move move
+                        case moves # find (\move -> (getTo move).rank == r && (getTo move).file == f ) of
+                          Just move -> PieceMove move
                           Nothing -> 
                             case matchingPiece of
                               Just p | (getData p).color == state.turn -> Piece
@@ -76,7 +76,7 @@ render state = do
                 in
                 HH.div  
                   [ HP.classes [HH.ClassName (show f <> show r)] ]
-                  [ HH.slot _square (r * 10 + f) square { piece : matchingPiece, rank : r, file : f, clickable: clickableStatus } HandleClick]
+                  [ HH.slot _square (r * 10 + f) square { piece : matchingPiece, rank : r, file : f, clickable: clickableStatus, turn : state.turn } HandleClick]
               )
             )
       )
