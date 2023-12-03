@@ -2,33 +2,41 @@ module Game.Chess.Move where
 
 import Prelude
 
-import Data.Array (filter, foldl, head, length, takeWhile)
-import Data.Maybe (fromMaybe)
+import Data.Array (filter, foldl, head, length, mapMaybe, takeWhile)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Game.Chess.Board (Board, Coordinate, GameResult(..))
 import Game.Chess.Pieces (Color(..), Piece(..), getData)
 
-
 type RawMove = { from :: Coordinate, to :: Coordinate}
 
-data Move = Move RawMove| Promotion RawMove
+data Move = Move RawMove| Promotion RawMove | Castle { rook :: RawMove, king :: RawMove}
 
 derive instance Eq Move
 instance Show Move where
   show (Move {from, to}) = show from <> show to
   show (Promotion {from, to}) = show from <> show to <> "P"
+  show (Castle {rook, king}) = show rook <> show king <> "C"
 instance Ord Move where
   compare (Move m) (Move m') = compare m m'
   compare (Promotion m) (Promotion m') = compare m m'
   compare (Move _) (Promotion _) = LT
   compare (Promotion _) (Move _) = GT
+  compare (Castle {king : km}) (Move m) = compare km m
+  compare (Move m) (Castle {king : km}) = compare m km
+  compare (Castle {king : km}) (Promotion m) = compare km m
+  compare (Promotion m) (Castle {king : km}) = compare m km
+  compare (Castle {king : km, rook : rm}) (Castle {king : km', rook : rm'}) = compare km km' <> compare rm rm'
+
 
 getRawMove :: Move -> RawMove
 getRawMove (Move move) = move
 getRawMove (Promotion move) = move
+getRawMove (Castle {king}) = king
 
 getTo :: Move -> Coordinate
 getTo (Move {to}) = to
 getTo (Promotion {to}) = to
+getTo (Castle {king}) = king.to
 
 removePiece :: {rank :: Int, file :: Int} -> Board -> Board
 removePiece move board = board # filter (\piece -> piece.rank /= move.rank || piece.file /= move.file)
@@ -124,6 +132,71 @@ filterMovesThatPutKingInCheck board moves =
     in
       not (isInCheck boardAfterMove (getData (getTo move).piece).color)
   )
+
+findCastleMoves :: Board -> Color -> Array Move
+findCastleMoves board color =
+  if isInCheck board color then 
+    []
+  else 
+    let 
+      maybeKing = 
+        board 
+        # filter (\{piece} -> 
+          case piece of 
+          King {color : c} | c == color -> true
+          _ -> false
+        )
+        # head
+      in
+      case maybeKing of 
+        Just king ->
+          let 
+            kingCoord = king # (\{rank, file} -> {rank, file})
+            kingHasMoved = (getData king.piece).hasMoved
+
+            unmovedRooks = 
+              board 
+              # filter (\{piece} -> 
+                case piece of 
+                Rook {color : c} | c == color -> true
+                _ -> false
+              )
+              # filter (\{piece} -> 
+                not (getData piece).hasMoved
+              )
+          in  
+            if kingHasMoved || (length unmovedRooks == 0) then 
+              []
+            else
+              let 
+                castleMoves = 
+                  unmovedRooks
+                  # mapMaybe (\rook@{rank, file, piece} ->
+                  
+                    let 
+                      rookDirection = if file > kingCoord.file then 1 else -1
+                      rookMove = {from: rook, to: {rank: rank, file: kingCoord.file + rookDirection, piece: piece}}
+                      kingMove = {from: king, to: {rank: rank, file: kingCoord.file + (rookDirection * 2), piece: king.piece}}
+                      allSpacesBetweenKingAndRookAreEmpty = 
+                        (board 
+                        # filter (\{rank : pieceRank, file : pieceFile} -> 
+                          pieceRank == rank && pieceFile > kingCoord.file && pieceFile < kingCoord.file + rookDirection
+                        )
+                        # length) == 0
+                      kingDoesntMoveThroughCheck =
+                        let 
+                          intermediateKingMove = {from: king, to: {rank: rank, file: kingCoord.file + rookDirection, piece: king.piece}}
+                          intermediateBoard = handleMove intermediateKingMove board
+                        in 
+                          not (isInCheck intermediateBoard color)
+                    in
+                      if allSpacesBetweenKingAndRookAreEmpty && kingDoesntMoveThroughCheck then 
+                        Just $ Castle {rook: rookMove, king: kingMove}
+                      else Nothing
+                  )
+              in
+              castleMoves
+        Nothing -> []
 
 convertToPromotions :: Array RawMove -> Array Move
 convertToPromotions moves = 
@@ -231,18 +304,23 @@ findBaseLegalMoves board (coord@{piece : Queen _}) =
   <#> (Move)
 
 findBaseLegalMoves board (coord@{rank, file, piece : King _}) = -- TODO castling
-  [{ from : coord, to: {rank: rank + 1, file: file, piece: coord.piece}}
-  , { from : coord, to: {rank: rank - 1, file: file, piece: coord.piece}}
-  , { from : coord, to: {rank: rank, file: file + 1, piece: coord.piece}}
-  , { from : coord, to: {rank: rank, file: file - 1, piece: coord.piece}}
-  , { from : coord, to: {rank: rank + 1, file: file + 1, piece: coord.piece}}
-  , { from : coord, to: {rank: rank + 1, file: file - 1, piece: coord.piece}}
-  , { from : coord, to: {rank: rank - 1, file: file + 1, piece: coord.piece}}
-  , { from : coord, to: {rank: rank - 1, file: file - 1, piece: coord.piece}}
-  ]
-  # filterSameColor board
-  # filterWithinBoardRange
-  <#> (Move)
+  let 
+    baseMoves = 
+      [{ from : coord, to: {rank: rank + 1, file: file, piece: coord.piece}}
+      , { from : coord, to: {rank: rank - 1, file: file, piece: coord.piece}}
+      , { from : coord, to: {rank: rank, file: file + 1, piece: coord.piece}}
+      , { from : coord, to: {rank: rank, file: file - 1, piece: coord.piece}}
+      , { from : coord, to: {rank: rank + 1, file: file + 1, piece: coord.piece}}
+      , { from : coord, to: {rank: rank + 1, file: file - 1, piece: coord.piece}}
+      , { from : coord, to: {rank: rank - 1, file: file + 1, piece: coord.piece}}
+      , { from : coord, to: {rank: rank - 1, file: file - 1, piece: coord.piece}}
+      ]
+      # filterSameColor board
+      # filterWithinBoardRange
+      <#> (Move)
+    castleMoves = findCastleMoves board (getData coord.piece).color
+  in 
+    baseMoves <> castleMoves
 
 
 findLegalMoves :: Board -> Coordinate -> Array Move 

@@ -30,7 +30,7 @@ derive instance Ord SquareSlot
 
 data Output = 
     InitialClick Coordinate
-  | MoveClick RawMove
+  | MoveClick (Array RawMove)
   | CancelClick
 
 
@@ -63,6 +63,7 @@ convertMove piece move =
   case move of 
     Promotion m -> Move { from : m.from, to : { rank : m.to.rank, file : m.to.file, piece : piece }}
     Move m -> Move m
+    Castle m -> Castle m
 
 square :: forall query m. H.Component query Input Output m
 square =
@@ -217,6 +218,8 @@ square =
     MClick move ->
       case move of 
         Promotion _m -> H.modify_ \s -> s { clickable = PromotionMove move } 
-        Move m ->  H.raise $  MoveClick m
+        Move m ->  H.raise $  MoveClick [m]
+        Castle {king : km, rook : rm} -> 
+          H.raise $ MoveClick [km, rm]
     ReceiveParentInput input -> H.modify_ \_ -> input
     Cancel -> H.raise CancelClick

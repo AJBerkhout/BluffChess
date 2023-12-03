@@ -3,7 +3,7 @@ module Game.UI.Board where
 import Prelude
 
 import CSS (display, flex)
-import Data.Array (find, reverse, (..))
+import Data.Array (find, foldl, reverse, (..))
 import Data.Const (Const)
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
@@ -89,10 +89,10 @@ handleAction = case _ of
         state <- H.get
         let moves = findLegalMoves state.board coord
         H.modify_ (\st -> st {clickedStatus = Clicked moves})
-      MoveClick move -> do
+      MoveClick moves -> do
         state <- H.get
         let 
-          newBoard = handleMove move state.board
+          newBoard = foldl (\b move -> handleMove move b) state.board moves 
           turn = case state.turn of
             White -> Black
             Black -> White
